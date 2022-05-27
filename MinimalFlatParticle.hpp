@@ -1,3 +1,4 @@
+#pragma once
 #include "utils/Vector.hpp"
 
 template <int extra_size=0> 

@@ -8,6 +8,8 @@ struct Box{
 		double cutoff_;
 		double cutoff2_;
 		double boxSize1d_;
+		double eps_;
+		double sigma_;
 		std::vector<Cell<Particle>> listofCells_;
 		Utils::Vector3d boxSize_;
 		Utils::Vector3d cellSize_;
@@ -22,8 +24,10 @@ struct Box{
 		Utils::Vector3i nrOfCells() {return nrOfCells_;}
 		double cutoff() {return cutoff_;}
 		double cutoff2() {return cutoff2_;}
+		double eps() {return eps_;}
+		double sigma() {return sigma_;}
 
-		Box(double cutoff, Utils::Vector3d boxSize) : cutoff_(cutoff),boxSize_(boxSize),cutoff2_(cutoff*cutoff) {
+		Box(Utils::Vector3d boxSize, double cutoff, double eps = 0, double sigma = 0) : boxSize_(boxSize),cutoff_(cutoff),cutoff2_(cutoff*cutoff),eps_(eps),sigma_(sigma) {
 			for (int i:{0,1,2}){
 				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_);
 				cellSize_[i]=boxSize_[i]/(double)nrOfCells_[i];
