@@ -9,7 +9,8 @@
 #include <cmath>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
-
+#include <boost/lexical_cast.hpp>
+#include <hpx/future.hpp>
 
 
 
@@ -53,6 +54,7 @@ void fill_Cell(Box<Particle>& box, std::string path_to_file){
 
 template <typename Particle, typename BinaryOp>
 void op_on_pairs_within_cutoff(Box<Particle>& box,BinaryOp op){
+	
 	auto op_within_cutoff=[cutoff2=box.cutoff2(),op](auto& par1, auto& par2){
 		auto dist=par2.pos()-par1.pos();
 		auto norm2 = dist.norm2();
@@ -74,6 +76,45 @@ void op_on_pairs_within_cutoff(Box<Particle>& box,BinaryOp op){
 		}
 	}
 }
+
+
+
+template <typename Particle, typename BinaryOp>
+void op_on_pairs_within_cutoff_hpx(Box<Particle>& box,BinaryOp op){
+		auto op_within_cutoff=[cutoff2=box.cutoff2(),op](auto& par1, auto& par2){
+		auto dist=par2.pos()-par1.pos();
+		auto norm2 = dist.norm2();
+		if(norm2<=cutoff2){
+			op(par1,par2);
+
+		}
+	};
+	auto op_on_cell=[op_within_cutoff](auto& cell){
+	
+		Utils::for_each_pair(cell.particles().begin(), cell.particles().end(), op_within_cutoff);
+		for  (auto& redNeighbor : cell.neighbors().red()){
+			if (redNeighbor!=NULL){ //BC
+				for(auto&  par1 : cell.particles()){
+					for (auto& par2 : redNeighbor->particles()){
+						op_within_cutoff(par1,par2);
+					}
+				}
+			}
+		}
+	
+	
+	};
+	std::vector<hpx::future<void>> fut;
+	//fut.push_back(hpx::async(op_on_pairs_within_cutoff<Particle,BinaryOp>,std::ref(box),op));
+	
+	for (auto& cell : box.all()){
+		fut.push_back(hpx::async(op_on_cell,std::ref(cell)));
+
+
+	}
+	hpx::wait_all(fut);
+}
+
 
 template <typename Particle>
 void print_forces(Box<Particle> box){
@@ -106,3 +147,22 @@ void print_forces_sorted(Box<Particle> box){
 		std::cout<<p.force()<<std::endl;}
 }
 
+template <typename Particle>
+void print_forces_sorted(Box<Particle> box, std::string file){
+	std::vector<Particle> allPart;
+	for (auto cell : box.all()){
+		for (auto particle : cell.particles()){
+			allPart.push_back(particle);
+
+		}
+	}
+	sort(allPart.begin(),allPart.end(),[](auto a, auto b){return a.pos().norm2() < b.pos().norm2();});
+	std::ofstream myfile(file);
+	for (auto p : allPart){
+		auto a =[](auto f){return boost::lexical_cast<std::string>(f);};
+		myfile<<a(p.force()[0])<<","<<a(p.force()[1])<<","<<a(p.force()[2])<<std::endl;
+
+	}
+
+	myfile.close();
+}

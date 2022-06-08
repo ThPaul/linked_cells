@@ -3,6 +3,8 @@
 #include "Box.hpp"
 #include <vector>
 #include <iostream>
+#include <chrono>
+#include <hpx/hpx_main.hpp>
 
 template <typename Particle>
 void calc_lj_force(Box<Particle>& box){
@@ -16,17 +18,20 @@ void calc_lj_force(Box<Particle>& box){
 		par2.force()-= forcevector;
 	};
 
-	op_on_pairs_within_cutoff(box,lj_force);
+	op_on_pairs_within_cutoff_hpx(box,lj_force);
 }
 
 int main(int argc, char** argv) {
 	double cutoff= 2.5;
-	Utils::Vector3d boxSize={5,10,15};
+	Utils::Vector3d boxSize={50,50,50};
 	double eps=1.0;
 	double sigma=1.0;
 	Box<MinimalFlatParticle<0>>box(boxSize,cutoff,eps,sigma);
 	fill_Cell(box,"/tikhome/tpaul/Documents/linked_cells/build/partPos");
+	auto  begin= std::chrono::steady_clock::now();
 	calc_lj_force(box);
-	print_forces_sorted(box);
+	auto end = std::chrono::steady_clock::now();
+	std::cout << "time elapsed " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]"<<std::endl;
+	print_forces_sorted(box,"forces_lc");
 
 	return 0; }

@@ -3,9 +3,9 @@ import numpy as np
 lj_eps = 1.0
 lj_sig = 1.0
 lj_cut = 2.5
-n_part = 50
+n_part = 1000000
 np.random.seed(seed=42)
-system = espressomd.System(box_l=[5,10,15])
+system = espressomd.System(box_l=[50,50,50])
 system.time_step = 0.01
 system.cell_system.skin=0
 system.periodicity = [False]*3
@@ -24,6 +24,10 @@ allpart=[]
 for p in system.part:
     allpart.append(p)
 allpart.sort(key=lambda x: x.pos[0]*x.pos[0]+x.pos[1]*x.pos[1]+x.pos[2]*x.pos[2])
+forces=[]
 for p in allpart:
-    print(p.f)
+    #print(p.f)
+    forces.append(p.f)
     #print(p.pos)
+np.savetxt("forces_esp",forces,delimiter=",")
+
