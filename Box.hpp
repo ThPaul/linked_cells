@@ -1,6 +1,7 @@
 #pragma once
 
 #include "maps_between_1d_3d.hpp"
+#include <iostream>
 template<typename Particle>
 struct Box{
 
@@ -28,11 +29,13 @@ struct Box{
 		double sigma() {return sigma_;}
 
 		Box(Utils::Vector3d boxSize, double cutoff, double eps = 0, double sigma = 0) : boxSize_(boxSize),cutoff_(cutoff),cutoff2_(cutoff*cutoff),eps_(eps),sigma_(sigma) {
+			// use a cell size smaller than the cutoff to reduce spurious pairs
 			for (int i:{0,1,2}){
-				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_);
+				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_*32./20.);
 				cellSize_[i]=boxSize_[i]/(double)nrOfCells_[i];
 			}
 			int nrOfCells=nrOfCells_[0]*nrOfCells_[1]*nrOfCells_[2];
+			std::cout <<"nrOfCells="<<nrOfCells<<" ("<<nrOfCells_[0]<<", "<<nrOfCells_[1]<<", "<<nrOfCells_[2]<<")\n";
 			listofCells_.resize(nrOfCells);
 			std::vector<std::array<int,3>>relPosRed;
 			std::vector<std::array<int,3>>relPosBlack;
