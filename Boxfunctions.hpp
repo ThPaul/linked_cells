@@ -55,11 +55,11 @@ void fill_Cell(Box<Particle>& box, std::string path_to_file){
 template <typename Particle, typename BinaryOp>
 void op_on_pairs_within_cutoff(Box<Particle>& box,BinaryOp op){
 	
-	auto op_within_cutoff=[cutoff2=box.cutoff2(),op](auto& par1, auto& par2){
+	auto op_within_cutoff=[cutoff2=box.cutoff2(),&op](auto& par1, auto& par2){
 		auto dist=par2.pos()-par1.pos();
 		auto norm2 = dist.norm2();
 		if(norm2<=cutoff2){
-			op(par1,par2);
+			op(par1,par2,norm2);
 
 		}
 	};
@@ -81,15 +81,15 @@ void op_on_pairs_within_cutoff(Box<Particle>& box,BinaryOp op){
 
 template <typename Particle, typename BinaryOp>
 void op_on_pairs_within_cutoff_hpx(Box<Particle>& box,BinaryOp op){
-		auto op_within_cutoff=[cutoff2=box.cutoff2(),op](auto& par1, auto& par2){
+		auto op_within_cutoff=[cutoff2=box.cutoff2(),&op](auto& par1, auto& par2){
 		auto dist=par2.pos()-par1.pos();
 		auto norm2 = dist.norm2();
 		if(norm2<=cutoff2){
-			op(par1,par2);
+			op(par1,par2,norm2);
 
 		}
 	};
-	auto op_on_cell=[op_within_cutoff](auto& cell){
+	auto op_on_cell=[&op_within_cutoff](auto& cell){
 	
 		Utils::for_each_pair(cell.particles().begin(), cell.particles().end(), op_within_cutoff);
 		for  (auto& redNeighbor : cell.neighbors().red()){

@@ -30,11 +30,11 @@ std::pair<double, double> statistics(std::vector<double> &vec) {
 
 template <typename Particle>
 void calc_lj_force(Box<Particle>& box){
-	auto lj_force=[eps=box.eps(),sigma=box.sigma()](auto& par1,auto& par2){
-		double distance2 =(par2.pos()-par1.pos()).norm2();
-		double sig_r6 = pow((sigma*sigma/distance2),3.0);
-		double sig_r12= sig_r6*sig_r6;
-		double force_norm = 24*eps/distance2*(2*sig_r12-sig_r6); // =force/distance
+	auto lj_force=[eps=box.eps(),sigma=box.sigma()](auto& par1,auto& par2, double dist2){
+		auto const sig_r2 = sigma * sigma / dist2;
+		auto const sig_r6 = sig_r2 * sig_r2 * sig_r2;
+		auto const sig_r12= sig_r6 * sig_r6;
+		double force_norm = 24*eps/dist2*(2*sig_r12-sig_r6); // =force/distance
 		Utils::Vector3d forcevector = -(par2.pos()-par1.pos())*force_norm;
 		par1.force()+= forcevector;
 		par2.force()-= forcevector;
