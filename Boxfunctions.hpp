@@ -13,6 +13,11 @@
 #include <hpx/future.hpp>
 
 
+enum class HPX_PROTOCOL : int {
+	NONE,
+	ASYNC
+};
+
 
 template  <typename Particle>
 void fill_Cell(Box<Particle>& box, std::vector<Utils::Vector3d>particleCoords){
@@ -51,46 +56,16 @@ void fill_Cell(Box<Particle>& box, std::string path_to_file){
 
 }	
 
-
-template <typename Particle, typename BinaryOp>
+template <HPX_PROTOCOL hpx_protocol, typename Particle, typename BinaryOp>
 void op_on_pairs_within_cutoff(Box<Particle>& box,BinaryOp op){
-	
-	auto op_within_cutoff=[cutoff2=box.cutoff2(),&op](auto& par1, auto& par2){
-		auto dist=par2.pos()-par1.pos();
-		auto norm2 = dist.norm2();
-		if(norm2<=cutoff2){
-			op(par1,par2,norm2);
-
-		}
-	};
-	for (auto& cell : box.all()){
-		Utils::for_each_pair(cell.particles().begin(), cell.particles().end(), op_within_cutoff);
-		for  (auto& redNeighbor : cell.neighbors().red()){
-			if (redNeighbor!=NULL){ //BC
-				for(auto&  par1 : cell.particles()){
-					for (auto& par2 : redNeighbor->particles()){
-						op_within_cutoff(par1,par2);
-					}
-				}
-			}
-		}
-	}
-}
-
-
-
-template <typename Particle, typename BinaryOp>
-void op_on_pairs_within_cutoff_hpx(Box<Particle>& box,BinaryOp op){
 		auto op_within_cutoff=[cutoff2=box.cutoff2(),&op](auto& par1, auto& par2){
 		auto dist=par2.pos()-par1.pos();
 		auto norm2 = dist.norm2();
 		if(norm2<=cutoff2){
 			op(par1,par2,norm2);
-
 		}
 	};
 	auto op_on_cell=[&op_within_cutoff](auto& cell){
-	
 		Utils::for_each_pair(cell.particles().begin(), cell.particles().end(), op_within_cutoff);
 		for  (auto& redNeighbor : cell.neighbors().red()){
 			if (redNeighbor!=NULL){ //BC
@@ -101,18 +76,18 @@ void op_on_pairs_within_cutoff_hpx(Box<Particle>& box,BinaryOp op){
 				}
 			}
 		}
-	
-	
 	};
-	std::vector<hpx::future<void>> fut;
-	//fut.push_back(hpx::async(op_on_pairs_within_cutoff<Particle,BinaryOp>,std::ref(box),op));
-	
-	for (auto& cell : box.all()){
-		fut.push_back(hpx::async(op_on_cell,std::ref(cell)));
-
-
+	if constexpr (hpx_protocol == HPX_PROTOCOL::ASYNC) {
+		std::vector<hpx::future<void>> fut;
+		for (auto& cell : box.all()){
+			fut.push_back(hpx::async(op_on_cell,std::ref(cell)));
+		}
+		hpx::wait_all(fut);
+	} else if constexpr (hpx_protocol == HPX_PROTOCOL::NONE) {
+		for (auto& cell : box.all()){
+			op_on_cell(cell);
+		}
 	}
-	hpx::wait_all(fut);
 }
 
 

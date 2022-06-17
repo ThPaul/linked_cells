@@ -40,7 +40,7 @@ void calc_lj_force(Box<Particle>& box){
 		par2.force()-= forcevector;
 	};
 
-	op_on_pairs_within_cutoff_hpx(box,lj_force);
+	op_on_pairs_within_cutoff<HPX_PROTOCOL::ASYNC>(box,lj_force);
 }
 
 auto kernel(Box<MinimalFlatParticle<0>>& box) {
