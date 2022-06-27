@@ -8,7 +8,7 @@ np.random.seed(seed=42)
 system = espressomd.System(box_l=[50,50,50])
 system.time_step = 0.01
 system.cell_system.skin=0
-system.periodicity = [False]*3
+#system.periodicity = [False]*3
 
 partpos=[]
 for i in range(n_part):

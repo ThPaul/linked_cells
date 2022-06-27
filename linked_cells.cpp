@@ -30,12 +30,12 @@ std::pair<double, double> statistics(std::vector<double> &vec) {
 
 template <typename Particle>
 void calc_lj_force(Box<Particle>& box){
-	auto lj_force=[eps=box.eps(),sigma=box.sigma()](auto& par1,auto& par2, double dist2){
+	auto lj_force=[eps=box.eps(),sigma=box.sigma()](auto& par1,auto& par2, double dist2, auto dist){
 		auto const sig_r2 = sigma * sigma / dist2;
 		auto const sig_r6 = sig_r2 * sig_r2 * sig_r2;
 		auto const sig_r12= sig_r6 * sig_r6;
 		double force_norm = 24*eps/dist2*(2*sig_r12-sig_r6); // =force/distance
-		Utils::Vector3d forcevector = -(par2.pos()-par1.pos())*force_norm;
+		Utils::Vector3d forcevector = -dist*force_norm;
 		par1.force()+= forcevector;
 		par2.force()-= forcevector;
 	};
@@ -57,10 +57,15 @@ int main(int argc, char** argv) {
 	Utils::Vector3d boxSize={50,50,50};
 	double eps=1.0;
 	double sigma=1.0;
-	Box<MinimalFlatParticle<0>>box(boxSize,cutoff,eps,sigma);
+	BC bc= BC::PERIODIC;
+	Box<MinimalFlatParticle<0>>box(boxSize,cutoff,bc,eps,sigma);
 	fill_Cell(box,"/tikhome/tpaul/Documents/linked_cells/build/partPos");
 	std::vector<double> timings = {};
 	for (int i = 0; i < 10; ++i) {
+	    for (auto& c : box.all()){
+		    for (auto& p : c.particles()){
+			    p.force()={0,0,0};
+			    }}
 	    timings.push_back(kernel(box));
 	}
 	auto const stats = detail::statistics(timings);

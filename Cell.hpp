@@ -21,6 +21,7 @@
 
 
 #include <utils/Span.hpp>
+#include <utils/Vector.hpp>
 
 #include <boost/range/iterator_range.hpp>
 
@@ -28,11 +29,27 @@
 #include <functional>
 #include <utility>
 #include <vector>
-
+#include <mutex>
 #include "ParticleList.hpp"
 
+
+
+template <class CellRef> 
+class Neighbor{
+	private: CellRef cellRef_;
+		 Utils::Vector3d offset_;
+		 bool isImage_;
+	public:
+		 Neighbor(){}
+		 Neighbor(CellRef NeighborCell, Utils::Vector3d offset,  bool isImage=false) : cellRef_(NeighborCell), offset_(offset), isImage_(isImage){}
+		 const bool isImage(){return isImage_;}
+		 const Utils::Vector3d offset() {return offset_;}
+		 CellRef cellRef() {return cellRef_;}
+};
+
+
 template <class CellRef> class Neighbors {
-  using storage_type = std::vector<CellRef>;
+  using storage_type = std::vector<Neighbor<CellRef>>;
 
 public:
   using value_type = typename storage_type::value_type;
@@ -41,6 +58,7 @@ public:
   using cell_range = boost::iterator_range<iterator>;
 
 private:
+
   void copy(const Neighbors &rhs) {
     m_neighbors = rhs.m_neighbors;
     m_red_black_divider =
@@ -57,8 +75,8 @@ public:
     return *this;
   }
 
-  Neighbors(Utils::Span<const CellRef> red_neighbors,
-            Utils::Span<const CellRef> black_neighbors) {
+  Neighbors(Utils::Span<Neighbor<CellRef>> red_neighbors,
+            Utils::Span<Neighbor<CellRef>> black_neighbors) {
     m_neighbors.resize(red_neighbors.size() + black_neighbors.size());
     m_red_black_divider = std::copy(red_neighbors.begin(), red_neighbors.end(),
                                     m_neighbors.begin());
@@ -102,7 +120,11 @@ class Cell {
 
   ParticleList<Particle> m_particles;
 
+
 public:
+
+
+  std::mutex cellMutex;
   /** Particles */
   auto &particles() { return m_particles; }
   auto const &particles() const { return m_particles; }
