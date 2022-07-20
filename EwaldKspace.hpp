@@ -19,8 +19,8 @@ template <typename Particle>
 std::vector<kValue> kSpaceSetup(Utils::Vector3i kVector ,Box<Particle>& box){
 	std::vector<kValue> kValues;
 	for (int i=0; i<=kVector[0]; i++){
-		for (int j=0; j<=kVector[0]; j++){
-			for (int l=0; l<=kVector[0]; l++){
+		for (int j=0; j<=kVector[1]; j++){
+			for (int l=0; l<=kVector[2]; l++){
 				if(i!=0||j!=0||l!=0){
 					kValue a;
 					a.k={i/box.boxSize()[0],j/box.boxSize()[1],l/box.boxSize()[2]};
@@ -63,7 +63,7 @@ void calckSpaceForces(std::vector<kValue>&kValues,Box<Particle>& box){
 			for (auto& p:cell.particles()){
 				for (auto& kValue : kValues){
 					double k2=kValue.k.norm2();
-					double force1d=box.coulombC()* p.charge()/Vol*4*M_PI/k2*exp(-k2/4.0/alpha/alpha);
+					double force1d=box.coulombC()* p.charge()/Vol*4.0*M_PI/k2*exp(-k2/4.0/alpha/alpha);
 					force1d*=cos(kValue.k*p.pos())*kValue.sin-kValue.cos*sin(kValue.k*p.pos());
 					p.force()+=force1d*kValue.k;
 					
