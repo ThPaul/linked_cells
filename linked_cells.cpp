@@ -1,3 +1,4 @@
+#include "Forces.hpp"
 #include "Boxfunctions.hpp"
 #include "MinimalFlatParticle.hpp"
 #include "Box.hpp"
@@ -29,6 +30,24 @@ std::pair<double, double> statistics(std::vector<double> &vec) {
 } // namespace detail
 
 template <typename Particle>
+void calc_ewald_rs_force(Box<Particle>& box){
+	auto ewald_rs_force=[coulombC=box.coulombC()](auto& par1,auto& par2, double dist2, auto dist){
+		double alpha=0.666;
+		double distnorm = sqrt(dist2);
+		const double pi = M_PI;
+		double part1 =2.0*alpha/sqrt(pi)*exp(-alpha*alpha*dist2);
+		double part2 =erfc(alpha*distnorm)/distnorm;
+		double charge = par1.charge()*par2.charge();
+		double force_norm = coulombC*charge*(part1+part2)/dist2; // =force/distance
+		Utils::Vector3d forcevector = dist*force_norm;
+		par1.force()+= forcevector;
+		par2.force()-= forcevector;
+	};
+
+short_range_forces<HPX_PROTOCOL::ASYNC>(box,ewald_rs_force);
+}
+
+template <typename Particle>
 void calc_lj_force(Box<Particle>& box){
 	auto lj_force=[eps=box.eps(),sigma=box.sigma()](auto& par1,auto& par2, double dist2, auto dist){
 		auto const sig_r2 = sigma * sigma / dist2;
@@ -40,12 +59,16 @@ void calc_lj_force(Box<Particle>& box){
 		par2.force()-= forcevector;
 	};
 
-	op_on_pairs_within_cutoff<HPX_PROTOCOL::ASYNC>(box,lj_force);
+short_range_forces<HPX_PROTOCOL::ASYNC>(box,lj_force);
 }
 
 auto kernel(Box<MinimalFlatParticle<0>>& box) {
 	auto  begin= std::chrono::steady_clock::now();
-	calc_lj_force(box);
+	//calc_lj_force(box);
+	//calc_ewald_rs_force(box);
+
+	Utils::Vector3i a={30,30,30};
+	kSpaceForces(a,box);
 	auto end = std::chrono::steady_clock::now();
 	auto res = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	std::cout << "time elapsed " << res << " [ms]"<<std::endl;
@@ -59,9 +82,11 @@ int main(int argc, char** argv) {
 	double sigma=1.0;
 	BC bc= BC::PERIODIC;
 	Box<MinimalFlatParticle<0>>box(boxSize,cutoff,bc,eps,sigma);
-	fill_Cell(box,"/tikhome/tpaul/Documents/linked_cells/build/partPos");
+	fill_Cell(box,"/tikhome/tpaul/Documents/linked_cells/build/partPos","/tikhome/tpaul/Documents/linked_cells/build/charges");
+
+
 	std::vector<double> timings = {};
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 1; ++i) {
 	    for (auto& c : box.all()){
 		    for (auto& p : c.particles()){
 			    p.force()={0,0,0};

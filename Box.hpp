@@ -16,6 +16,7 @@ struct Box{
 		double boxSize1d_;
 		double eps_;
 		double sigma_;
+		double coulombC_;
 		std::vector<Cell<Particle>> listofCells_;
 		Utils::Vector3d boxSize_;
 		Utils::Vector3d cellSize_;
@@ -31,11 +32,12 @@ struct Box{
 		double cutoff2() {return cutoff2_;}
 		double eps() {return eps_;}
 		double sigma() {return sigma_;}
+		double coulombC() {return coulombC_;}
 
-		Box(Utils::Vector3d boxSize, double cutoff, BC boundaryCondition, double eps = 0, double sigma = 0) : boxSize_(boxSize),cutoff_(cutoff),cutoff2_(cutoff*cutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition) {
+		Box(Utils::Vector3d boxSize, double cutoff, BC boundaryCondition, double eps = 0, double sigma = 0, double coulombC =1) : boxSize_(boxSize),cutoff_(cutoff),cutoff2_(cutoff*cutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC) {
 			// use a cell size smaller than the cutoff to reduce spurious pairs
 			for (int i:{0,1,2}){
-				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_*20./20.);//32./20.
+				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_*32./20.);//32./20.
 				cellSize_[i]=boxSize_[i]/(double)nrOfCells_[i];
 			}
 			int nrOfCells=nrOfCells_[0]*nrOfCells_[1]*nrOfCells_[2];
