@@ -32,13 +32,13 @@ std::pair<double, double> statistics(std::vector<double> &vec) {
 template <typename Particle>
 void calc_ewald_rs_force(Box<Particle>& box){
 	auto ewald_rs_force=[coulombC=box.coulombC()](auto& par1,auto& par2, double dist2, auto dist){
-		double alpha=0.666;
+		double alpha= 0.666;
 		double distnorm = sqrt(dist2);
 		const double pi = M_PI;
 		double part1 =2.0*alpha/sqrt(pi)*exp(-alpha*alpha*dist2);
 		double part2 =erfc(alpha*distnorm)/distnorm;
 		double charge = par1.charge()*par2.charge();
-		double force_norm = coulombC*charge*(part1+part2)/dist2; // =force/distance
+		double force_norm =- coulombC*charge*(part1+part2)/dist2; // =force/distance
 		Utils::Vector3d forcevector = dist*force_norm;
 		par1.force()+= forcevector;
 		par2.force()-= forcevector;
@@ -53,8 +53,8 @@ void calc_lj_force(Box<Particle>& box){
 		auto const sig_r2 = sigma * sigma / dist2;
 		auto const sig_r6 = sig_r2 * sig_r2 * sig_r2;
 		auto const sig_r12= sig_r6 * sig_r6;
-		double force_norm = 24*eps/dist2*(2*sig_r12-sig_r6); // =force/distance
-		Utils::Vector3d forcevector = -dist*force_norm;
+		double force_norm = - 24*eps/dist2*(2*sig_r12-sig_r6); // =force/distance
+		Utils::Vector3d forcevector = dist*force_norm;
 		par1.force()+= forcevector;
 		par2.force()-= forcevector;
 	};
@@ -65,8 +65,7 @@ short_range_forces<HPX_PROTOCOL::ASYNC>(box,lj_force);
 auto kernel(Box<MinimalFlatParticle<0>>& box) {
 	auto  begin= std::chrono::steady_clock::now();
 	//calc_lj_force(box);
-	//calc_ewald_rs_force(box);
-
+	calc_ewald_rs_force(box);
 	Utils::Vector3i a={30,30,30};
 	kSpaceForces(a,box);
 	auto end = std::chrono::steady_clock::now();
@@ -76,7 +75,7 @@ auto kernel(Box<MinimalFlatParticle<0>>& box) {
 }
 
 int main(int argc, char** argv) {
-	double cutoff= 2.5;
+	double cutoff=2.5;
 	Utils::Vector3d boxSize={50,50,50};
 	double eps=1.0;
 	double sigma=1.0;

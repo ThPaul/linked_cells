@@ -18,9 +18,11 @@ for i in range(n_part):
     partpos.append(np.random.random(3)*system.box_l)
     charge.append(2*(i%2)-1)
 system.part.add(pos=partpos,type=[0]*n_part,q=charge)
-#system.non_bonded_inter[0, 0].lennard_jones.set_params(
-#   epsilon=lj_eps, sigma=lj_sig, cutoff=lj_cut, shift="auto")
-#p3m = electrostatics.P3M(prefactor=coulombC,r_cut=lj_cut,accuracy=1e-2)
+#system.non_bonded_inter[0, 0].lennard_jones.set_params(epsilon=lj_eps, sigma=lj_sig, cutoff=lj_cut, shift="auto")
+#p3m = electrostatics.P3M(prefactor=coulombC,accuracy=0.001)
+#short range only
+#p3m = electrostatics.P3M(prefactor=coulombC,r_cut=lj_cut,accuracy=1,alpha=0.666,tune=0,cao=1,mesh=[2,2,2])
+#long range only
 p3m = electrostatics.P3M(prefactor=coulombC,r_cut=0,mesh=[30,30,30],alpha=0.666,accuracy=1,tune=0,cao=6)
 system.actors.add(p3m)
 np.savetxt("partPos",partpos,delimiter=",")
