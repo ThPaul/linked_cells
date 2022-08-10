@@ -4,6 +4,11 @@
 #include "NeighborSetup.hpp"
 
 
+enum class FORCES : int {
+	LJ,
+	EWALDRS,
+	EWALDKS
+};
 
 
 template<typename Particle>
@@ -11,8 +16,8 @@ struct Box{
 
 	private:
 		BC boundaryCon_;
-		double cutoff_;
-		double cutoff2_;
+		double ljcutoff_;
+		double ljcutoff2_;
 		double boxSize1d_;
 		double eps_;
 		double sigma_;
@@ -21,6 +26,12 @@ struct Box{
 		Utils::Vector3d boxSize_;
 		Utils::Vector3d cellSize_;
 		Utils::Vector3i nrOfCells_;
+		std::vector<FORCES> forces_;
+
+		double ewaldcutoff_;
+		double ewaldcutoff2_;
+		Utils::Vector3i kSpaceSize_;
+		double alpha_;
 	public:
 		Cell<Particle>& operator[](int idx) { return listofCells_[idx]; }
 		int size() {return listofCells_.size();}
@@ -28,21 +39,28 @@ struct Box{
 		Utils::Vector3d boxSize() {return boxSize_;}
 		Utils::Vector3d cellSize() {return cellSize_;}
 		Utils::Vector3i nrOfCells() {return nrOfCells_;}
-		double cutoff() {return cutoff_;}
-		double cutoff2() {return cutoff2_;}
+		std::vector<FORCES> forces() {return forces_;}
+		double ljcutoff() {return ljcutoff_;}
+		double ljcutoff2() {return ljcutoff2_;}
 		double eps() {return eps_;}
 		double sigma() {return sigma_;}
 		double coulombC() {return coulombC_;}
 
-		Box(Utils::Vector3d boxSize, double cutoff, BC boundaryCondition, double eps = 0, double sigma = 0, double coulombC =1) : boxSize_(boxSize),cutoff_(cutoff),cutoff2_(cutoff*cutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC) {
-			// use a cell size smaller than the cutoff to reduce spurious pairs
+		double ewaldcutoff() {return ewaldcutoff_;}
+		double ewaldcutoff2() {return ewaldcutoff2_;}
+		double alpha() {return alpha_;}
+		Utils::Vector3i kSpaceSize() {return kSpaceSize_;}
+
+		Box(Utils::Vector3d boxSize, double ljcutoff, BC boundaryCondition, double eps, double sigma, double coulombC, double ewaldcutoff, double alpha, Utils::Vector3i kSpaceSize,std::vector<FORCES> forces) : boxSize_(boxSize),ljcutoff_(ljcutoff),ljcutoff2_(ljcutoff*ljcutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC),ewaldcutoff_(ewaldcutoff),ewaldcutoff2_(ewaldcutoff*ewaldcutoff),alpha_(alpha),kSpaceSize_(kSpaceSize),forces_(forces) {
+			// use a cell size smaller than the ljcutoff to reduce spurious pairs
+			double cutoff=std::max(ljcutoff_,ewaldcutoff_);
 			for (int i:{0,1,2}){
-				nrOfCells_[i]=(int)(boxSize_[i]/cutoff_*32./20.);//32./20.
+				nrOfCells_[i]=(int)(boxSize_[i]/cutoff*32./20.);//32./20.
 				cellSize_[i]=boxSize_[i]/(double)nrOfCells_[i];
 			}
 			int nrOfCells=nrOfCells_[0]*nrOfCells_[1]*nrOfCells_[2];
 			std::cout <<"nrOfCells="<<nrOfCells<<" ("<<nrOfCells_[0]<<", "<<nrOfCells_[1]<<", "<<nrOfCells_[2]<<")\n";
 			listofCells_=std::vector<Cell<Particle>>(nrOfCells);
-			NeighborSetup(listofCells_,nrOfCells_,cellSize_,cutoff2_,boundaryCon_);
+			NeighborSetup(listofCells_,nrOfCells_,cellSize_,ljcutoff2_,boundaryCon_);
 		}
 };

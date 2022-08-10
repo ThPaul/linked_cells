@@ -8,4 +8,6 @@ for i in range (0, len(forces_esp)-1):
         print(forces_esp[i])
         print(forces_lc[i])
 print(np.allclose(forces_esp,forces_lc))
+print(np.sum(forces_esp,0))
+print(np.sum(forces_lc,0))
 

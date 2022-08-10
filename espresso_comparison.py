@@ -4,7 +4,7 @@ import numpy as np
 lj_eps = 1.0
 lj_sig = 1.0
 lj_cut = 2.5
-n_part = 1000
+n_part = 50
 np.random.seed(seed=10)
 system = espressomd.System(box_l=[50,50,50])
 system.time_step = 0.01
@@ -21,9 +21,9 @@ system.part.add(pos=partpos,type=[0]*n_part,q=charge)
 #system.non_bonded_inter[0, 0].lennard_jones.set_params(epsilon=lj_eps, sigma=lj_sig, cutoff=lj_cut, shift="auto")
 #p3m = electrostatics.P3M(prefactor=coulombC,accuracy=0.001)
 #short range only
-#p3m = electrostatics.P3M(prefactor=coulombC,r_cut=lj_cut,accuracy=1,alpha=0.666,tune=0,cao=1,mesh=[2,2,2])
+#p3m = electrostatics.P3M(prefactor=coulombC,r_cut=2*lj_cut,accuracy=1,alpha=0.666,tune=0,cao=1,mesh=[2,2,2])
 #long range only
-p3m = electrostatics.P3M(prefactor=coulombC,r_cut=0,mesh=[30,30,30],alpha=0.666,accuracy=1,tune=0,cao=6)
+p3m = electrostatics.P3M(prefactor=coulombC,r_cut=0,mesh=[20,20,20],alpha=0.26840984934898815,accuracy=1,tune=0,cao=6)
 system.actors.add(p3m)
 np.savetxt("partPos",partpos,delimiter=",")
 np.savetxt("charges",charge,delimiter=",")

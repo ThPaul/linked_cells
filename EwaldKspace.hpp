@@ -7,25 +7,17 @@ struct kValue{
 };
 
 template <typename Particle>
-void kSpaceForces(Utils::Vector3i kVector ,Box<Particle>& box){
-	auto k = kSpaceSetup(kVector,box);
+void kSpaceForces(Box<Particle>& box){
+	auto k = kSpaceSetup(box);
 	k= calcGlobalValues(k,box);
 	calckSpaceForces(k,box);
-/*	for (int i=30;i<=30;i++){
-		Utils::Vector3i maxValue={i,i,i};
-		auto k=kSpaceSetup(maxValue, box);
-		k=calcGlobalValues(k,box);
-		std::cout<<i<<std::endl;
-		calckSpaceForcestest2(k,box);
-	
-	} */
-
 }
 
 
 template <typename Particle>
-std::vector<kValue> kSpaceSetup(Utils::Vector3i kVector ,Box<Particle>& box){
+std::vector<kValue> kSpaceSetup(Box<Particle>& box){
 	std::vector<kValue> kValues;
+	auto kVector=box.kSpaceSize();
 	for (int i=0; i<=kVector[0]; i++){
 		for (int j=0; j<=kVector[1]; j++){
 			for (int l=0; l<=kVector[2]; l++){
@@ -64,7 +56,7 @@ std::vector<kValue>& calcGlobalValues(std::vector<kValue>&kValues,Box<Particle>&
 
 template <typename Particle>
 void calckSpaceForces(std::vector<kValue>&kValues,Box<Particle>& box) {
-	double alpha= 0.666;
+	double alpha= box.alpha();
 	double Vol = box.boxSize()[0]*box.boxSize()[1]*box.boxSize()[2];
 		for (auto& cell:box.all()){
 			for (auto& p:cell.particles()){
@@ -82,42 +74,18 @@ void calckSpaceForces(std::vector<kValue>&kValues,Box<Particle>& box) {
 }
 
 
-template <typename Particle>
-void calckSpaceForcestest(std::vector<kValue>&kValues,Box<Particle>& box){
-	Utils::Vector3d force;
-	double alpha=0.666;
-	bool test=false;
-	double Vol = box.boxSize()[0]*box.boxSize()[1]*box.boxSize()[2];
-		for (auto& cell:box.all()){
-			for (auto& p:cell.particles()){
-				test=true;
-				for (auto& kValue : kValues){
-					double k2=kValue.k.norm2();
-					double force1d=box.coulombC()* p.charge()/Vol*4.0*M_PI/k2*exp(-k2/4.0/alpha/alpha);
-					force1d*=-cos(kValue.k*p.pos())*kValue.sin+kValue.cos*sin(kValue.k*p.pos());
-					force+=force1d*kValue.k;
-					
-
-					
-				}
-				if (test) break;
-			}
-			if(test) break;
-		}
-		std::cout<<force<<std::endl;
-}
-
 
 template <typename Particle>
-void calckSpaceForcestest2(std::vector<kValue>&kValues,Box<Particle>& box){
+void calckSpaceForcesTest(std::vector<kValue>&kValues,Box<Particle>& box){
 	Utils::Vector3d force;
 
 	Utils::Vector3d sum;
-	double alpha=0.666;
+	double alpha=box.alpha();
 	bool test=false;
 	double Vol = box.boxSize()[0]*box.boxSize()[1]*box.boxSize()[2];
 		for (auto& cell:box.all()){
 			for (auto& p:cell.particles()){
+				force={0,0,0};
 				test=true;
 				for (auto& cell :  box.all()){
 					for (auto& q:cell.particles()){
@@ -131,11 +99,13 @@ void calckSpaceForcestest2(std::vector<kValue>&kValues,Box<Particle>& box){
 					}
 				}
 				force*=p.charge()/Vol;
-							
+				p.force()=force;			
 
-				if (test) break;
+
+				//if (test) break;
 			}
-			if(test) break;
+			//if(test) break;
 		}
 		std::cout<<force<<std::endl;
+		
 }
