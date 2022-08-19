@@ -6,6 +6,7 @@ struct InputData{
        double eps = 0;
        double sigma = 0;
        double coulombC =1;
+       double ewaldacc = -1;
        std::string posFile;
        std::string chargeFile;
        double alpha;
@@ -38,6 +39,7 @@ InputData readInput(std::string file){
 			else if(split[0]=="positionfile") dat.posFile=split[1];
 			else if(split[0]=="chargefile") dat.chargeFile=split[1];
 			else if(split[0]=="alpha") dat.alpha=std::stod(split[1]);
+			else if(split[0]=="ewaldaccurracy") dat.ewaldacc=std::stod(split[1]);
 			else if(split[0]=="boundarycondition"){
 				boost::to_lower(split[1]);
 				if(split[1]=="none") dat.boundaryCondition=BC::NONE;

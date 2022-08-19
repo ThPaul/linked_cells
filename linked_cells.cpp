@@ -3,7 +3,6 @@
 #include "Forces.hpp"
 #include "Boxfunctions.hpp"
 #include "MinimalFlatParticle.hpp"
-
 #include "Box.hpp"
 #include "InputData.hpp"
 #include <vector>
@@ -49,6 +48,8 @@ auto kernel(Box<MinimalFlatParticle<0>>& box) {
 
 int main(int argc, char** argv) {
 	auto settings = readInput("/tikhome/tpaul/Documents/linked_cells/build/settings");
+	auto contains=[forces=settings.forces](FORCES f){return std::find(forces.begin(),forces.end(),f)!=forces.end();};
+//	if(settings.ewaldacc!=-1&&(contains(FORCES::EWALDKS)||contains(FORCES::EWALDRS))) ewaldTuning(settings);
 	Box<MinimalFlatParticle<0>>box(settings.boxSize,settings.LJcutoff,settings.boundaryCondition,settings.eps,settings.sigma,settings.coulombC,settings.EwaldCutoff,settings.alpha,settings.kSpaceSize,settings.forces);
 	fill_Cell(box,settings.posFile,settings.chargeFile);
 

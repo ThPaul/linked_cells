@@ -70,7 +70,7 @@ void calc_forces(Box<Particle>& box){
 	if (contains(FORCES::LJ)&&contains(FORCES::EWALDRS))calc_short_range_forces<hpx_protocol>(box,lj_ewald_force);
 	else if (contains(FORCES::LJ))calc_short_range_forces<hpx_protocol>(box,lj_force);
 	else if (contains(FORCES::EWALDRS)) calc_short_range_forces<hpx_protocol>(box,ewald_rs_force);
-	if (contains(FORCES::EWALDKS)) kSpaceForces(box);
+	if (contains(FORCES::EWALDKS)) kSpaceForces<hpx_protocol>(box);
 
 }
 
