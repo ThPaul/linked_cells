@@ -1,5 +1,4 @@
 
-
 #include "Forces.hpp"
 #include "Boxfunctions.hpp"
 #include "MinimalFlatParticle.hpp"
@@ -9,6 +8,7 @@
 #include <iostream>
 #include <chrono>
 #include <hpx/hpx_main.hpp>
+#include "velocity_verlet_langevin.hpp"
 
 
 #include <vector>
@@ -36,7 +36,7 @@ std::pair<double, double> statistics(std::vector<double> &vec) {
 
 auto kernel(Box<MinimalFlatParticle<0>>& box) {
 	auto  begin= std::chrono::steady_clock::now();
-	calc_forces<HPX_PROTOCOL::ASYNC>(box);
+	calc_forces<HPX_PROTOCOL::NONE>(box);
 	//calc_ewald_rs_force(box);
 	Utils::Vector3i a={30,30,30};
 	//kSpaceForces(a,box);
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 	auto settings = readInput("/tikhome/tpaul/Documents/linked_cells/build/settings");
 	auto contains=[forces=settings.forces](FORCES f){return std::find(forces.begin(),forces.end(),f)!=forces.end();};
 //	if(settings.ewaldacc!=-1&&(contains(FORCES::EWALDKS)||contains(FORCES::EWALDRS))) ewaldTuning(settings);
-	Box<MinimalFlatParticle<0>>box(settings.boxSize,settings.LJcutoff,settings.boundaryCondition,settings.eps,settings.sigma,settings.coulombC,settings.EwaldCutoff,settings.alpha,settings.kSpaceSize,settings.forces);
+	Box<MinimalFlatParticle<0>>box(settings.boxSize,settings.LJcutoff,settings.boundaryCondition,settings.eps,settings.sigma,settings.coulombC,settings.EwaldCutoff,settings.alpha,settings.kmax,settings.forces);
 	fill_Cell(box,settings.posFile,settings.chargeFile);
 
 

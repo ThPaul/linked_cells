@@ -28,10 +28,17 @@ struct Box{
 		Utils::Vector3i nrOfCells_;
 		std::vector<FORCES> forces_;
 
+		double dt_;
+		int currenttimestep_=0;
+		int seed_;
 		double ewaldcutoff_;
 		double ewaldcutoff2_;
-		Utils::Vector3i kSpaceSize_;
+		int kmax_;
 		double alpha_;
+		double temperature_;
+		double frictionCoef_;
+
+
 	public:
 		Cell<Particle>& operator[](int idx) { return listofCells_[idx]; }
 		int size() {return listofCells_.size();}
@@ -46,12 +53,20 @@ struct Box{
 		double sigma() {return sigma_;}
 		double coulombC() {return coulombC_;}
 
+		double dt() {return dt_;}
+
 		double ewaldcutoff() {return ewaldcutoff_;}
 		double ewaldcutoff2() {return ewaldcutoff2_;}
 		double alpha() {return alpha_;}
-		Utils::Vector3i kSpaceSize() {return kSpaceSize_;}
+		int kmax() {return kmax_;}
 
-		Box(Utils::Vector3d boxSize, double ljcutoff, BC boundaryCondition, double eps, double sigma, double coulombC, double ewaldcutoff, double alpha, Utils::Vector3i kSpaceSize,std::vector<FORCES> forces) : boxSize_(boxSize),ljcutoff_(ljcutoff),ljcutoff2_(ljcutoff*ljcutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC),ewaldcutoff_(ewaldcutoff),ewaldcutoff2_(ewaldcutoff*ewaldcutoff),alpha_(alpha),kSpaceSize_(kSpaceSize),forces_(forces) {
+		double temperature() {return temperature_;}
+		double frictionCoef() {return frictionCoef_;}
+
+		int currenttimestep() {return currenttimestep_;}
+		int seed() {return seed_;}
+
+		Box(Utils::Vector3d boxSize, double ljcutoff, BC boundaryCondition, double eps, double sigma, double coulombC, double ewaldcutoff, double alpha, int kmax,std::vector<FORCES> forces) : boxSize_(boxSize),ljcutoff_(ljcutoff),ljcutoff2_(ljcutoff*ljcutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC),ewaldcutoff_(ewaldcutoff),ewaldcutoff2_(ewaldcutoff*ewaldcutoff),alpha_(alpha),kmax_(kmax),forces_(forces) {
 			// use a cell size smaller than the ljcutoff to reduce spurious pairs
 			double cutoff=std::max(ljcutoff_,ewaldcutoff_);
 			for (int i:{0,1,2}){
@@ -62,5 +77,7 @@ struct Box{
 			std::cout <<"nrOfCells="<<nrOfCells<<" ("<<nrOfCells_[0]<<", "<<nrOfCells_[1]<<", "<<nrOfCells_[2]<<")\n";
 			listofCells_=std::vector<Cell<Particle>>(nrOfCells);
 			NeighborSetup(listofCells_,nrOfCells_,cellSize_,ljcutoff2_,boundaryCon_);
+			seed_=time(NULL);
+			std::cout<<seed_<<std::endl;
 		}
 };

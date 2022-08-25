@@ -11,11 +11,13 @@ struct kValue{
 template <typename Particle>
 std::vector<kValue> kSpaceSetup(Box<Particle>& box){
 	std::vector<kValue> kValues;
-	auto kVector=box.kSpaceSize();
-	for (int i=0; i<=kVector[0]; i++){
-		for (int j=0; j<=kVector[1]; j++){
-			for (int l=0; l<=kVector[2]; l++){
-				if(i!=0||j!=0||l!=0){
+	auto kmax=box.kmax();
+	for (int i=-kmax; i<=kmax; i++){
+		for (int j=-kmax; j<=kmax; j++){
+			for (int l=-kmax; l<=kmax; l++){
+				int norm2=i*i+j*j+l*l;
+				int kmax2=kmax*kmax;
+				if(norm2<=kmax2&&norm2>0){
 					kValue a;
 					a.k={i/box.boxSize()[0],j/box.boxSize()[1],l/box.boxSize()[2]};
 					a.k*=2.0*M_PI;
@@ -71,7 +73,7 @@ void calckSpaceForces(std::vector<kValue>&kValues,Box<Particle>& box) {
 	auto forcecalc=[alpha,Vol,kValues,coulombC=box.coulombC()](auto& p){
 
 		for (auto kValue : kValues){
-			double k2=kValue.k.norm2();
+			double k2=kValue.k.norm2();   
 			double force1d=coulombC* p.charge()/Vol*4.0*M_PI/k2*exp(-k2/4.0/alpha/alpha);
 			force1d*=-cos(kValue.k*p.pos())*kValue.sin+kValue.cos*sin(kValue.k*p.pos());
 			p.force()+=force1d*kValue.k;

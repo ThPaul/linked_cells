@@ -10,7 +10,7 @@ struct InputData{
        std::string posFile;
        std::string chargeFile;
        double alpha;
-       Utils::Vector3i kSpaceSize;
+       int kmax;
        std::vector<FORCES> forces;
 };
 
@@ -39,6 +39,7 @@ InputData readInput(std::string file){
 			else if(split[0]=="positionfile") dat.posFile=split[1];
 			else if(split[0]=="chargefile") dat.chargeFile=split[1];
 			else if(split[0]=="alpha") dat.alpha=std::stod(split[1]);
+			else if(split[0]=="kmax") dat.kmax=std::stod(split[1]);
 			else if(split[0]=="ewaldaccurracy") dat.ewaldacc=std::stod(split[1]);
 			else if(split[0]=="boundarycondition"){
 				boost::to_lower(split[1]);
@@ -56,16 +57,6 @@ InputData readInput(std::string file){
 			dat.boxSize=coords;
 			}
 
-			else if (split[0]=="kspacesize"){
-
-			std::vector<std::string> dim;
-			boost::split(dim,split[1],[](char c){return c==',';});
-			Utils::Vector3i coords;
-			for (int i : {0,1,2}){
-				coords[i]=std::stoi(dim[i]);
-				}
-			dat.kSpaceSize=coords;
-			}
 
 			else if (split[0]=="forces"){
 

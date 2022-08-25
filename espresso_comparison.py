@@ -5,7 +5,7 @@ lj_eps = 1.0
 lj_sig = 1.0
 lj_cut = 2.5
 n_part = 10000
-np.random.seed(seed=10)
+np.random.seed(seed=100)
 system = espressomd.System(box_l=[50,50,50])
 system.time_step = 0.01
 system.cell_system.skin=0

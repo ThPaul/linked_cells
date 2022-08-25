@@ -7,6 +7,7 @@ private:
   Utils::Vector3d _pos{};
   Utils::Vector3d _v{};
   Utils::Vector3d _force{};
+  int _index;
  double _mass;
  double _charge;
  char _waste[extra_size];
@@ -16,10 +17,12 @@ public:
   auto const& force() const { return _force; };
   auto const& mass() const { return _mass; };
   auto const& charge() const { return _charge; };
+  auto const& index() const { return _index; };
   
   auto & pos()  { return _pos; };
   auto & v() { return _v; };
   auto & force() { return _force; };
   auto & mass() { return _mass; };
   auto & charge() { return _charge; };
+  auto & index() { return _index; };
 };

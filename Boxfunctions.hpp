@@ -34,6 +34,7 @@ void fill_Cell(Box<Particle>& box, std::vector<Utils::Vector3d>particleCoords, s
 		Particle particle;
 		particle.pos()=par;
 		particle.charge()=particleCharges[i];
+		particle.index()=i;
 		box[cellindex].particles().insert(particle);
 	}
 };
