@@ -25,6 +25,8 @@ enum class HPX_PROTOCOL : int {
 
 template  <typename Particle>
 void fill_Cell(Box<Particle>& box, std::vector<Utils::Vector3d>particleCoords, std::vector<double> particleCharges){
+	
+	std::cout<<"SETTING ALL MASSES TO 1"<<std::endl;
 	for (int i=0; i< particleCoords.size();i++){
 		auto par = particleCoords[i];
 		Utils::Vector3d d;
@@ -35,6 +37,7 @@ void fill_Cell(Box<Particle>& box, std::vector<Utils::Vector3d>particleCoords, s
 		particle.pos()=par;
 		particle.charge()=particleCharges[i];
 		particle.index()=i;
+		particle.mass()=1;
 		box[cellindex].particles().insert(particle);
 	}
 };
@@ -164,7 +167,9 @@ void print_forces_sorted(Box<Particle>& box, std::string file){
 	std::ofstream myfile(file);
 	for (auto p : allPart){
 		auto a =[](auto f){return boost::lexical_cast<std::string>(f);};
-		myfile<<a(p.force()[0])<<","<<a(p.force()[1])<<","<<a(p.force()[2])<<std::endl;
+		///myfile<<a(p.force()[0])<<","<<a(p.force()[1])<<","<<a(p.force()[2])<<std::endl;
+
+		myfile<<a(p.v()[0])<<","<<a(p.v()[1])<<","<<a(p.v()[2])<<std::endl;
 
 	}
 

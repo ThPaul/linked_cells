@@ -33,6 +33,11 @@ void calc_short_range_forces(Box<Particle>& box, BinaryOp op){
 
 template <HPX_PROTOCOL hpx_protocol, typename Particle>
 void calc_forces(Box<Particle>& box){
+	for (auto& cells:box.all()){
+		for (auto& p:cells.particles()){
+			p.force()={0,0,0};
+		}
+	}
 
 	auto ewald_rs_force=[alpha=box.alpha(),coulombC=box.coulombC(),cutoff2=box.ewaldcutoff2()](auto& par1,auto& par2, double dist2, auto dist){
 		if(dist2<=cutoff2){
@@ -45,6 +50,8 @@ void calc_forces(Box<Particle>& box){
 			Utils::Vector3d forcevector = dist*force_norm;
 			par1.force()+= forcevector;
 			par2.force()-= forcevector;
+
+
 		}
 	};
 
@@ -58,6 +65,7 @@ void calc_forces(Box<Particle>& box){
 			Utils::Vector3d forcevector = dist*force_norm;
 			par1.force()+= forcevector;
 			par2.force()-= forcevector;
+			if (forcevector.norm()>10000) std::cout<<par1.pos()<<par2.pos()<<std::endl;
 		}
 	};
 

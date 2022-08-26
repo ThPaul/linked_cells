@@ -28,15 +28,15 @@ struct Box{
 		Utils::Vector3i nrOfCells_;
 		std::vector<FORCES> forces_;
 
-		double dt_;
+		double dt_=0.01;
 		int currenttimestep_=0;
-		int seed_;
+		int seed_=12;
 		double ewaldcutoff_;
 		double ewaldcutoff2_;
 		int kmax_;
 		double alpha_;
-		double temperature_;
-		double frictionCoef_;
+		double temperature_=1;
+		double frictionCoef_=1;
 
 
 	public:
@@ -64,6 +64,8 @@ struct Box{
 		double frictionCoef() {return frictionCoef_;}
 
 		int currenttimestep() {return currenttimestep_;}
+		int settimestep(int a){currenttimestep_=a; return currenttimestep_;}
+		int increasetimestep() {currenttimestep_++; return currenttimestep_;}
 		int seed() {return seed_;}
 
 		Box(Utils::Vector3d boxSize, double ljcutoff, BC boundaryCondition, double eps, double sigma, double coulombC, double ewaldcutoff, double alpha, int kmax,std::vector<FORCES> forces) : boxSize_(boxSize),ljcutoff_(ljcutoff),ljcutoff2_(ljcutoff*ljcutoff),eps_(eps),sigma_(sigma), boundaryCon_(boundaryCondition), coulombC_(coulombC),ewaldcutoff_(ewaldcutoff),ewaldcutoff2_(ewaldcutoff*ewaldcutoff),alpha_(alpha),kmax_(kmax),forces_(forces) {
@@ -77,7 +79,5 @@ struct Box{
 			std::cout <<"nrOfCells="<<nrOfCells<<" ("<<nrOfCells_[0]<<", "<<nrOfCells_[1]<<", "<<nrOfCells_[2]<<")\n";
 			listofCells_=std::vector<Cell<Particle>>(nrOfCells);
 			NeighborSetup(listofCells_,nrOfCells_,cellSize_,ljcutoff2_,boundaryCon_);
-			seed_=time(NULL);
-			std::cout<<seed_<<std::endl;
 		}
 };

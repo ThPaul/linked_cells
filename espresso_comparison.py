@@ -6,7 +6,7 @@ lj_sig = 1.0
 lj_cut = 2.5
 n_part = 10000
 np.random.seed(seed=100)
-system = espressomd.System(box_l=[50,50,50])
+system = espressomd.System(box_l=[100,100,100])
 system.time_step = 0.01
 system.cell_system.skin=0
 #system.periodicity = [False]*3
@@ -14,9 +14,21 @@ coulombC=1
 
 partpos=[]
 charge=[]
-for i in range(n_part):
-    partpos.append(np.random.random(3)*system.box_l)
-    charge.append(2*(i%2)-1)
+i=0
+while i<n_part:
+    par=np.random.random(3)*system.box_l
+    md=2*lj_eps;
+
+    for b in partpos:
+        dist=par-b
+        md=min(md,dist[0]*dist[0]+dist[1]*dist[1]+dist[2]*dist[2])
+    if md>lj_eps :
+        print(i)
+        partpos.append(par)
+        charge.append(2*(i%2)-1)
+        i=i+1
+    else:
+        print("no")
 system.part.add(pos=partpos,type=[0]*n_part,q=charge)
 #system.non_bonded_inter[0, 0].lennard_jones.set_params(epsilon=lj_eps, sigma=lj_sig, cutoff=lj_cut, shift="auto")
 p3m = electrostatics.P3M(prefactor=coulombC,accuracy=0.001)
